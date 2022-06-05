@@ -21,12 +21,12 @@ from SalesAndReviews.views import SalesAndReviewsViewSet
 
 router = routers.SimpleRouter()
 router.register(r'SalesAndReviews', SalesAndReviewsViewSet)
+urlpatterns = router.urls
 
 schema_view = get_swagger_view(title='PythonDjangoAssignment')
 
-urlpatterns = [
+urlpatterns += [
     path('admin/', admin.site.urls),
-    # path('sales_and_reviews/', include('SalesAndReviews.urls')),
-    path('', include(router.urls)),
+    # path('', include(router.urls)),
     path('swagger/', schema_view),
 ]
