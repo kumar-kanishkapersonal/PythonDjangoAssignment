@@ -100,36 +100,3 @@ class SalesAndReviewsViewSet(viewsets.ViewSet):
                     return Response("No Reviews Found", status=status.HTTP_404_NOT_FOUND)
             except Exception as exc:
                 return Response("Internal Error", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-# # to upload data from csv to db.
-# # def uploadPharmaSales(filename):
-# #     with open(filename, errors="ignore") as csv_file:
-# #         reader = csv.reader(csv_file)
-# #         next(reader)
-# #         sales_list = []
-# #         for row in enumerate(reader):
-# #             print(len(row))
-# #             (
-# #                 _id,
-# #                 condition,
-# #                 date,
-# #                 drugName,
-# #                 rating,
-# #                 review,
-# #                 uniqueId,
-# #                 usefulCount,
-# #             ) = row[1]
-# #             sales_list.append(
-# #                 DrugReview(
-# #                     _id,
-# #                     condition,
-# #                     date,
-# #                     drugName,
-# #                     rating,
-# #                     review,
-# #                     uniqueId,
-# #                     usefulCount,
-# #                 )
-# #             )
-# #     DrugReview.objects.bulk_create(sales_list)

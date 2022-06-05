@@ -27,6 +27,5 @@ schema_view = get_swagger_view(title='PythonDjangoAssignment')
 
 urlpatterns += [
     path('admin/', admin.site.urls),
-    # path('', include(router.urls)),
     path('swagger/', schema_view),
 ]
