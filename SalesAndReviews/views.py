@@ -26,72 +26,79 @@ Drug_Classifiction = {
     "R": "Respiratory System Drugs"
 }
 
-sales_schema = AutoSchema(manual_fields=[coreapi.Field("year", required=True, location="form", schema=coreschema.String()),
-                                         coreapi.Field("drug_classification", required=True, location="form", schema=coreschema.String())])
+sales_schema = AutoSchema(
+    manual_fields=[coreapi.Field("year", required=True, location="form", schema=coreschema.String()),
+                   coreapi.Field("drug_classification", required=True, location="form", schema=coreschema.String())])
 
-review_schema = AutoSchema(manual_fields=[coreapi.Field("year", required=True, location="form", schema=coreschema.String()),
-                                         coreapi.Field("drug", required=True, location="form", schema=coreschema.String())])
+review_schema = AutoSchema(
+    manual_fields=[coreapi.Field("year", required=True, location="form", schema=coreschema.String()),
+                   coreapi.Field("drug", required=True, location="form", schema=coreschema.String())])
 
 
 @api_view(['POST'])
 @schema(sales_schema)
 def Retrieve_Sales_by_Drug_Classification(request):
-    year = int(request.data["year"])
-    req_drug_classification = request.data["drug_classification"].upper()
-    if year not in range(2014, 2020):
-        return Response("Year out of range", status=status.HTTP_400_BAD_REQUEST)
-    if req_drug_classification not in ["M", "N", "R"]:
-        return Response("drug_classification not valid", status=status.HTTP_400_BAD_REQUEST)
-    sales = PharmaSales.objects.all()
-    serializer = PharmaSalesSerializer(sales, many=True)
-    res = []
-    for key in ATC_codes_and_description.keys():
-        if key.startswith(req_drug_classification):
-            result = {}
-            result["drug_classification"] = Drug_Classifiction[req_drug_classification]
-            result["atc_description"] = f"{ATC_codes_and_description[key]} ({key})"
-            sales_this_year = 0
-            sales_prev_year = 0
-            this_year = f"year - {year}"
-            prev_year = f"year - {year-1}"
-            for line in serializer.data:
-                if line.get("year") == year:
-                    sales_this_year += line.get(key.lower())
-                    result[this_year] = sales_this_year
-                if year-1 in range(2014, 2020):
-                    if line.get("year") == year-1:
-                        sales_prev_year += line.get(key.lower())
-                    result[prev_year] = sales_prev_year
-                else:
-                    result[prev_year] = "NA"
-            res.append(result)
-    return Response(res, status=status.HTTP_200_OK)
+    try:
+        year = int(request.data["year"])
+        req_drug_classification = request.data["drug_classification"].upper()
+        if year not in range(2014, 2020):
+            return Response("Year out of range", status=status.HTTP_400_BAD_REQUEST)
+        if req_drug_classification not in ["M", "N", "R"]:
+            return Response("drug_classification not valid", status=status.HTTP_400_BAD_REQUEST)
+        sales = PharmaSales.objects.all()
+        serializer = PharmaSalesSerializer(sales, many=True)
+        res = []
+        for key in ATC_codes_and_description.keys():
+            if key.startswith(req_drug_classification):
+                result = {"drug_classification": Drug_Classifiction[req_drug_classification],
+                          "atc_description": f"{ATC_codes_and_description[key]} ({key})"}
+                sales_this_year = 0
+                sales_prev_year = 0
+                this_year = f"year - {year}"
+                prev_year = f"year - {year - 1}"
+                for line in serializer.data:
+                    if line.get("year") == year:
+                        sales_this_year += line.get(key.lower())
+                        result[this_year] = sales_this_year
+                    if year - 1 in range(2014, 2020):
+                        if line.get("year") == year - 1:
+                            sales_prev_year += line.get(key.lower())
+                        result[prev_year] = sales_prev_year
+                    else:
+                        result[prev_year] = "NA"
+                    res.append(result)
+            return Response(res, status=status.HTTP_200_OK)
+        else:
+            return Response("Not Found", status=status.HTTP_404_NOT_FOUND)
+    except Exception as exc:
+        return Response("Internal Error", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['POST'])
 @schema(review_schema)
 def Retrieve_Drug_Reviews_for_a_given_Drug(request):
-    year = int(request.data["year"])
-    drug = request.data["drug"].lower()
-    drug_list = ["melatonin", "rituximab", "disulfiram", "erlotinib", "pazopanib", "eribulin"]
-    if year not in range(2014, 2020):
-        return Response("Year out of range", status=status.HTTP_400_BAD_REQUEST)
-    if drug not in drug_list:
-        return Response("Drug not valid", status=status.HTTP_400_BAD_REQUEST)
-    reviews = DrugReview.objects.all().order_by("date")
-    serializer = DrugReviewSerializer(reviews, many=True)
-    res = []
-    for line in serializer.data:
-        if line.get("drugName").lower() == drug.lower():
-            result = {
-            "condition": line.get("condition"),
-            "date": line.get("date"),
-            "review": line.get("review"),
-            }
-            res.append(result)
-    return Response(res, status=status.HTTP_200_OK)
-
-
+    try:
+        year = int(request.data["year"])
+        drug = request.data["drug"]
+        if year not in range(2014, 2020):
+            return Response("Year out of range", status=status.HTTP_400_BAD_REQUEST)
+        reviews = DrugReview.objects.filter(drugName=drug).order_by("date")
+        if reviews.exists():
+            serializer = DrugReviewSerializer(reviews, many=True)
+            res = []
+            for line in serializer.data:
+                result = {
+                    "drug_name": line.get("drugName"),
+                    "condition": line.get("condition"),
+                    "date": line.get("date"),
+                    "review": line.get("review").strip('"\\"'),
+                }
+                res.append(result)
+            return Response(res, status=status.HTTP_200_OK)
+        else:
+            return Response("No Reviews Found", status=status.HTTP_404_NOT_FOUND)
+    except Exception as exc:
+        return Response("Internal Error", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 # to upload data from csv to db.
 # def uploadPharmaSales(filename):
