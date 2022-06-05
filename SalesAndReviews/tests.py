@@ -4,7 +4,6 @@ import mock
 from mock import patch
 from .models import DrugReview, PharmaSales
 from .serializers import DrugReviewSerializer, DrugReview
-from .views import SalesAndReviewsViewSet
 
 
 class TestCases(TestCase):
