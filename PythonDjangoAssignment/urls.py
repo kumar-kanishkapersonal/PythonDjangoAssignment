@@ -15,12 +15,18 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from rest_framework import routers
 from rest_framework_swagger.views import get_swagger_view
+from SalesAndReviews.views import SalesAndReviewsViewSet
+
+router = routers.SimpleRouter()
+router.register(r'SalesAndReviews', SalesAndReviewsViewSet)
 
 schema_view = get_swagger_view(title='PythonDjangoAssignment')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('sales_and_reviews/', include('SalesAndReviews.urls')),
+    # path('sales_and_reviews/', include('SalesAndReviews.urls')),
+    path('', include(router.urls)),
     path('swagger/', schema_view),
 ]
