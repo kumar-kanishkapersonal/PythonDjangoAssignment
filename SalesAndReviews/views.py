@@ -66,10 +66,8 @@ def Retrieve_Sales_by_Drug_Classification(request):
                         result[prev_year] = sales_prev_year
                     else:
                         result[prev_year] = "NA"
-                    res.append(result)
-            return Response(res, status=status.HTTP_200_OK)
-        else:
-            return Response("Not Found", status=status.HTTP_404_NOT_FOUND)
+                res.append(result)
+        return Response(res, status=status.HTTP_200_OK)
     except Exception as exc:
         return Response("Internal Error", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
