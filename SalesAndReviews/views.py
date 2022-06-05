@@ -51,8 +51,7 @@ class SalesAndReviewsViewSet(viewsets.ViewSet):
                 return Response("Year out of range", status=status.HTTP_400_BAD_REQUEST)
             if req_drug_classification not in ["M", "N", "R"]:
                 return Response("drug_classification not valid", status=status.HTTP_400_BAD_REQUEST)
-            sales = self.queryset
-            serializer = PharmaSalesSerializer(sales, many=True)
+            serializer = PharmaSalesSerializer(self.queryset, many=True)
             res = []
             for key in ATC_codes_and_description.keys():
                 if key.startswith(req_drug_classification):
